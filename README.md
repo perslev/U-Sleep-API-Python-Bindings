@@ -11,7 +11,7 @@ An experimental/minimal implementation of Python bindings to the U-Sleep Webserv
 
 ### Sessions
 
-All endpoints accept the query parameter `?session_name=[SESSION_NAME]`. Each stores information on which model to use, what file to predict on and handles to output log- and hypnogram files.
+All endpoints accept the query parameter `?session_name=[SESSION_NAME]`. Each session stores information on which model to use, what file to predict on and handles to output log- and hypnogram files.
 Each user may have (at the time of writing) 5 active sessions.
 
 If no session is specified, the `'default'` session name is used. Note that the `'default'` session is also used by the browser when accessing U-Sleep at [https://sleep.ai.ku.dk](https://sleep.ai.ku.dk).
@@ -48,7 +48,7 @@ curl -s -X GET -H "Authorization: jwt [API TOKEN]" https://sleep.ai.ku.dk/api/v1
 
 
 ## Authentication
-Requests to any API endpoint must include an API authentication token. Obtain your token by:
+Requests to any API endpoint must include an API authentication token. To obtain a token:
 
 1. Log in to your account at [https://sleep.ai.ku.dk/login](https://sleep.ai.ku.dk/login).
 2. Select "Account" and "Generate API Token" from the drop-down menu.
