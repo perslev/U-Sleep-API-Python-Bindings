@@ -13,7 +13,7 @@ git clone https://github.com/perslev/U-Sleep-API-Python-Bindings
 pip install ./U-Sleep-API-Python-Bindings
 ```
 
-See [usage example](##Python-Bindings-Example) below.
+See [usage example](#python-bindings-example) below.
 
 ## API Overview
 
