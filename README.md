@@ -7,12 +7,12 @@ An experimental/minimal implementation of Python bindings to the U-Sleep Webserv
 
 ## API Overview
 
-####Sessions
+### Sessions
 
 All endpoints accept the query parameter `?session_name=[SESSION_NAME]`. Each stores information on which model to use, what file to predict on and handles to output log- and hypnogram files.
 Each user may have (at the time of writing) 5 active sessions.
 
-####Endpoints
+### Endpoints
 
 - `GET` - `/api/v1/get/model_names` - Get a list of available models.
 - `GET` - `/api/v1/get/configuration_options` - Get configuration options for model & file.
@@ -35,7 +35,7 @@ Account:
 
 - `POST` - `/api/v1/account/delete` - Permanently delete your account and its data. 
 
-####Example
+### Example
 
 ```bash
 curl -s -X GET -H "Authorization: jwt [API TOKEN]" https://sleep.ai.ku.dk/api/v1/get/model_names
