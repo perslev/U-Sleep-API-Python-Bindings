@@ -7,6 +7,14 @@ An experimental/minimal implementation of Python bindings to the U-Sleep Webserv
 
 **Under development: The Web API and Python bindings are subject to rapid changes.**
 
+## Installation
+```bash
+git clone https://github.com/perslev/U-Sleep-API-Python-Bindings
+pip install ./U-Sleep-API-Python-Bindings
+```
+
+See [usage example](##Python-Bindings-Example) below.
+
 ## API Overview
 
 ### Sessions
