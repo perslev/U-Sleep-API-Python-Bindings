@@ -71,7 +71,7 @@ from usleep_api import USleepAPI
 
 
 if __name__ == "__main__":
-    file_path = "./my_psg.edf"        # Insert here
+    # Create an API token at https://sleep.ai.ku.dk.
     api_token = "eyJ0eXAiOiJKV1Q..."  # Insert here
 
     # Create a sleep stager object and a new session
@@ -79,7 +79,7 @@ if __name__ == "__main__":
                              session_name="my_session")
 
     # See a list of valid models and set which model to use
-    logger.info("Available models: {}".format(sleep_stager.get_model_names())
+    logger.info(f"Available models: {sleep_stager.get_model_names()}")
     sleep_stager.set_model('U-Sleep v1.0')
 
     # Upload a local file (usually .edf format)
