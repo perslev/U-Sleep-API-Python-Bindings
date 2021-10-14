@@ -79,7 +79,7 @@ if __name__ == "__main__":
     session = api.new_session(session_name="my_session")
 
     # See a list of valid models and set which model to use
-    logger.info(f"Available models: {sleep_stager.get_model_names()}")
+    logger.info(f"Available models: {session.get_model_names()}")
     session.set_model("U-Sleep v1.0")
 
     # Upload a local file (usually .edf format)
