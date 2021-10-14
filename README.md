@@ -74,7 +74,7 @@ if __name__ == "__main__":
     # Create an API token at https://sleep.ai.ku.dk.
     api_token = "eyJ0eXAiOiJKV1Q..."  # Insert here
 
-    # Create a sleep stager object and a new session
+    # Create an API object and (optionally) a new session.
     api = USleepAPI(api_token=api_token)
     session = api.new_session(session_name="my_session")
 
