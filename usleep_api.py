@@ -9,18 +9,20 @@ from bs4 import BeautifulSoup
 
 
 class USleepAPI:
-    def __init__(self, personal_access_token, session_name=None, url="https://sleep.ai.ku.dk:443"):
+    def __init__(self, api_token, session_name=None, validate_token=True, url="https://sleep.ai.ku.dk:443"):
         self.url = url.rstrip("/")
         self.requests_session = requests.sessions.Session()
         self.session_name = session_name
-        self.token = personal_access_token
+        self.token = api_token
         self.csrf_token = self.get_csrf_token()
-        self.validate_token()
+        if validate_token:
+            self.validate_token()
 
     def new_session(self, session_name):
-        return SleepStager(personal_access_token=self.token,
-                           url=self.url,
-                           session_name=session_name)
+        return USleepAPI(api_token=self.token,
+                         url=self.url,
+                         session_name=session_name,
+                         validate_token=False)
 
     def validate_token(self):
         logger.info("Validating auth token...")

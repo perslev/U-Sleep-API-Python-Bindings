@@ -75,38 +75,38 @@ if __name__ == "__main__":
     api_token = "eyJ0eXAiOiJKV1Q..."  # Insert here
 
     # Create a sleep stager object and a new session
-    sleep_stager = USleepAPI(personal_access_token=api_token,
-                             session_name="my_session")
+    api = USleepAPI(api_token=api_token)
+    session = api.new_session(session_name="my_session")
 
     # See a list of valid models and set which model to use
     logger.info(f"Available models: {sleep_stager.get_model_names()}")
-    sleep_stager.set_model("U-Sleep v1.0")
+    session.set_model("U-Sleep v1.0")
 
     # Upload a local file (usually .edf format)
-    sleep_stager.upload_file("./my_psg.edf")
+    session.upload_file("./my_psg.edf")
 
     # Start the prediction on two channel groups:
     #   1: EEG Fpz-Cz + EOG horizontal
     #   2: EEG Pz-Oz + EOG horizontal
     # Using 30 second windows (note: U-Slep v1.0 uses 128 Hz re-sampled signals)
-    sleep_stager.predict(channel_groups=[["EEG Fpz-Cz", "EOG horizontal"],
-                                         ["EEG Pz-Oz", "EOG horizontal"]],
-                         data_per_prediction=128*30)
+    session.predict(data_per_prediction=128*30,
+                    channel_groups=[["EEG Fpz-Cz", "EOG horizontal"],
+                                    ["EEG Pz-Oz", "EOG horizontal"]])
 
     # Wait for the job to finish or stream to the log output
-    # sleep_stager.stream_prediction_log()
-    success = sleep_stager.wait_for_completion()
+    # session.stream_prediction_log()
+    success = session.wait_for_completion()
 
     if success:
         # Fetch hypnogram
-        hyp = sleep_stager.get_hypnogram()
+        hyp = session.get_hypnogram()
         logger.info(hyp["hypnogram"])
 
         # Download hypnogram file
-        sleep_stager.download_hypnogram(out_path="./hypnogram", file_type="tsv")
+        session.download_hypnogram(out_path="./hypnogram", file_type="tsv")
     else:
         logger.error("Prediction failed.")
 
     # Delete session (i.e., uploaded file, prediction and logs)
-    sleep_stager.delete_session()
+    session.delete_session()
 ```
