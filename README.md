@@ -5,8 +5,46 @@ Python bindings to the U-Sleep Webserver API
 ## Purpose
 An experimental/minimal implementation of Python bindings to the U-Sleep Webserver ([https://sleep.ai.ku.dk](https://sleep.ai.ku.dk)) API.
 
+## API Overview
+
+####Sessions
+
+All endpoints accept the query parameter `?session_name=[SESSION_NAME]`. Each stores information on which model to use, what file to predict on and handles to output log- and hypnogram files.
+Each user may have (at the time of writing) 5 active sessions.
+
+####Endpoints
+
+- `GET` - `/api/v1/get/model_names` - Get a list of available models.
+- `GET` - `/api/v1/get/configuration_options` - Get configuration options for model & file.
+- `GET` - `/api/v1/get/prediction_status` - Get prediction process status.
+- `GET` - `/api/v1/get/hypnogram` - Get hypnogram after prediction completion.
+- `GET` - `/api/v1/get/prediction_log` - Get the prediction log.
+- `GET` - `/api/v1/token/validate` - To test if a token is valid.
+- `GET` - `/api/v1/sleep_stager/get_session_names` - Get a list of active sessions.
+- `POST` - `/api/v1/file/upload` - Upload a file to predict on in a session.
+- `POST` - `/api/v1/file/delete` - Delete an uploaded file in a session.
+- `POST` - `/api/v1/sleep_stager/set_model` - Specify which model to use in a session.
+- `POST` - `/api/v1/sleep_stager/delete_session` - Delete a session and its data.
+- `POST` - `/api/v1/sleep_stager/predict` - Start prediction process on session.
+
+Download:
+
+- `GET` - `/api/v1/download/<resource>` - Download `resource` in a session.
+
+Account:
+
+- `POST` - `/api/v1/account/delete` - Permanently delete your account and its data. 
+
+####Example
+
+```bash
+curl -s -X GET -H "Authorization: jwt [API TOKEN]" https://sleep.ai.ku.dk/api/v1/get/model_names
+>> {"models":["U-Sleep v1.0"]}
+```
+
+
 ## Authentication
-All requests to any API endpoints must include an API authentication token. Obtain your token by:
+Requests to any API endpoint must include an API authentication token. Obtain your token by:
 
 1. Log in to your account at [https://sleep.ai.ku.dk/login](https://sleep.ai.ku.dk/login).
 2. Select "Account" and "Generate API Token" from the drop-down menu.
@@ -16,7 +54,9 @@ At the time of writing the obtained token is valid for 12 hours. Once expired, a
 
 Keep your token(s) private as they represent your identity to the server and allows others to authenticate on yout behalf.
 
-## Example
+## Python Bindings Example
+
+The `USleepAPI` class provides bindings for most of the API endpoints and may be used, e.g., as follows:
 
 ```python
 import logging
