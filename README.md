@@ -3,12 +3,12 @@ Python bindings to the U-Sleep Webserver API
 
 
 ## Purpose
-An experimental/minimal implementation of Python bindings to the U-Sleep Webserver ([https://sleep.ai.ku.dk]()) API.
+An experimental/minimal implementation of Python bindings to the U-Sleep Webserver ([https://sleep.ai.ku.dk](https://sleep.ai.ku.dk)) API.
 
 ## Authentication
 All requests to any API endpoints must include an API authentication token. Obtain your token by:
 
-1. Log in to your account at [https://sleep.ai.ku.dk/login]().
+1. Log in to your account at [https://sleep.ai.ku.dk/login](https://sleep.ai.ku.dk/login).
 2. Select "Account" and "Generate API Token" from the drop-down menu.
 3. Paste the API token into your script.
 
