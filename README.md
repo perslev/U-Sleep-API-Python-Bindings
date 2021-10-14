@@ -5,12 +5,16 @@ Python bindings to the U-Sleep Webserver API
 ## Purpose
 An experimental/minimal implementation of Python bindings to the U-Sleep Webserver ([https://sleep.ai.ku.dk](https://sleep.ai.ku.dk)) API.
 
+**Under development: The Web API and Python bindings are subject to rapid changes.**
+
 ## API Overview
 
 ### Sessions
 
 All endpoints accept the query parameter `?session_name=[SESSION_NAME]`. Each stores information on which model to use, what file to predict on and handles to output log- and hypnogram files.
 Each user may have (at the time of writing) 5 active sessions.
+
+If no session is specified, the `'default'` session name is used. Note that the `'default'` session is also used by the browser when accessing U-Sleep at [https://sleep.ai.ku.dk](https://sleep.ai.ku.dk).
 
 ### Endpoints
 
