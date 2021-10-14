@@ -14,7 +14,7 @@ An experimental/minimal implementation of Python bindings to the U-Sleep Webserv
 All endpoints accept the query parameter `?session_name=[SESSION_NAME]`. Each session stores information on which model to use, what file to predict on and handles to output log- and hypnogram files.
 Each user may have (at the time of writing) 5 active sessions.
 
-If no session is specified, the `'default'` session name is used. Note that the `'default'` session is also used by the browser when accessing U-Sleep at [https://sleep.ai.ku.dk](https://sleep.ai.ku.dk).
+If no session is specified, the `default` session name is used. Note that the `default` session is also used by the browser when accessing U-Sleep at [https://sleep.ai.ku.dk](https://sleep.ai.ku.dk).
 
 ### Endpoints
 
@@ -80,17 +80,17 @@ if __name__ == "__main__":
 
     # See a list of valid models and set which model to use
     logger.info(f"Available models: {sleep_stager.get_model_names()}")
-    sleep_stager.set_model('U-Sleep v1.0')
+    sleep_stager.set_model("U-Sleep v1.0")
 
     # Upload a local file (usually .edf format)
-    sleep_stager.upload_file(file_path)
+    sleep_stager.upload_file("./my_psg.edf")
 
     # Start the prediction on two channel groups:
     #   1: EEG Fpz-Cz + EOG horizontal
     #   2: EEG Pz-Oz + EOG horizontal
     # Using 30 second windows (note: U-Slep v1.0 uses 128 Hz re-sampled signals)
-    sleep_stager.predict(channel_groups=[['EEG Fpz-Cz', 'EOG horizontal'],
-                                         ['EEG Pz-Oz', 'EOG horizontal']],
+    sleep_stager.predict(channel_groups=[["EEG Fpz-Cz", "EOG horizontal"],
+                                         ["EEG Pz-Oz", "EOG horizontal"]],
                          data_per_prediction=128*30)
 
     # Wait for the job to finish or stream to the log output
@@ -100,10 +100,10 @@ if __name__ == "__main__":
     if success:
         # Fetch hypnogram
         hyp = sleep_stager.get_hypnogram()
-        logger.info(hyp['hypnogram'])
+        logger.info(hyp["hypnogram"])
 
         # Download hypnogram file
-        sleep_stager.download_hypnogram(out_path='./hypnogram', file_type='tsv')
+        sleep_stager.download_hypnogram(out_path="./hypnogram", file_type="tsv")
     else:
         logger.error("Prediction failed.")
 
