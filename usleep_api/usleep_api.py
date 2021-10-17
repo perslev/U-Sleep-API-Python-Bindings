@@ -13,13 +13,12 @@ class USleepAPI:
         self.url = url.rstrip("/")
         self.requests_session = requests.sessions.Session()
         self.session_name = session_name
-        self.token = api_token
-        self.csrf_token = self.get_csrf_token()
+        self.api_token = api_token
         if validate_token:
             self.validate_token()
 
     def new_session(self, session_name):
-        return USleepAPI(api_token=self.token,
+        return USleepAPI(api_token=self.api_token,
                          url=self.url,
                          session_name=session_name,
                          validate_token=False)
@@ -30,20 +29,9 @@ class USleepAPI:
         if response.status_code != 200 or not response.content.decode("utf-8").startswith("OK"):
             raise ConnectionRefusedError("Invalid authentication token specified.")
 
-    def get_csrf_token(self):
-        response = self.get("/login", as_json=False, log_response=False)
-        soup = BeautifulSoup(response.content, "html.parser")
-        csrf_token = soup.find('input', attrs={"id": 'csrf_token'}).get('value')
-        return csrf_token
-
     def _add_token_to_headers(self, headers=None):
         headers = headers or {}
-        headers['Authorization'] = f"JWT {self.token}"
-        return headers
-
-    def _add_csrf_to_headers(self, headers=None):
-        headers = headers or {}
-        headers['X-CSRFToken'] = self.csrf_token
+        headers['Authorization'] = f"JWT {self.api_token}"
         return headers
 
     def _add_session_to_params(self, params=None):
@@ -63,7 +51,7 @@ class USleepAPI:
     def get(self, endpoint, as_json=False, log_response=True):
         uri = f"{self.url}/{endpoint.lstrip('/')}"
         headers, params = {}, {}
-        if self.token:
+        if self.api_token:
             headers = self._add_token_to_headers(headers)
         if self.session_name:
             params = self._add_session_to_params(params)
@@ -77,8 +65,7 @@ class USleepAPI:
 
     def post(self, endpoint, headers=None, data=None, json=None, files=None, params=None):
         uri = f"{self.url}/{endpoint.lstrip('/')}"
-        headers = self._add_csrf_to_headers(headers)
-        if self.token:
+        if self.api_token:
             headers = self._add_token_to_headers(headers)
         if self.session_name:
             params = self._add_session_to_params(params)
