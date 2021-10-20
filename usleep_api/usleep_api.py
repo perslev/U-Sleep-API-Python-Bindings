@@ -31,7 +31,7 @@ class USleepAPI:
 
     def _add_token_to_headers(self, headers=None):
         headers = headers or {}
-        headers['Authorization'] = f"JWT {self.api_token}"
+        headers['Authorization'] = f"Bearer {self.api_token}"
         return headers
 
     def _add_session_to_params(self, params=None):
