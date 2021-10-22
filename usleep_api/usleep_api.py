@@ -5,11 +5,12 @@ import os
 import time
 import requests
 import json
+from json import JSONDecodeError
 from bs4 import BeautifulSoup
 
 
 class USleepAPI:
-    def __init__(self, api_token, session_name=None, validate_token=True, url="https://sleep.ai.ku.dk:443"):
+    def __init__(self, api_token, session_name="default", validate_token=True, url="https://sleep.ai.ku.dk:443"):
         self.url = url.rstrip("/")
         self.requests_session = requests.sessions.Session()
         self.session_name = session_name
@@ -25,19 +26,14 @@ class USleepAPI:
 
     def validate_token(self):
         logger.info("Validating auth token...")
-        response = self.get("/api/v1/token/validate")
-        if response.status_code != 200 or not response.content.decode("utf-8").startswith("OK"):
+        response = self.get("/api/v1/info/ping")
+        if response.status_code != 200:
             raise ConnectionRefusedError("Invalid authentication token specified.")
 
     def _add_token_to_headers(self, headers=None):
         headers = headers or {}
         headers['Authorization'] = f"Bearer {self.api_token}"
         return headers
-
-    def _add_session_to_params(self, params=None):
-        params = params or {}
-        params['session_name'] = f"{self.session_name}"
-        return params
 
     @staticmethod
     def _log_response(response, type_):
@@ -48,37 +44,47 @@ class USleepAPI:
             content = response.content.decode('utf-8')
         logger_method(f"Server response to {type_}: {content}")
 
-    def get(self, endpoint, as_json=False, log_response=True):
+    def _request(self, endpoint, method, as_json=False, log_response=True, headers=None, **kwargs):
         uri = f"{self.url}/{endpoint.lstrip('/')}"
-        headers, params = {}, {}
+        method = method.upper()
+        if method == "GET":
+            request_method = self.requests_session.get
+        elif method == "POST":
+            request_method = self.requests_session.post
+        elif method == "DELETE":
+            request_method = self.requests_session.delete
+        else:
+            raise ValueError(f"Method {method} is not supported.")
         if self.api_token:
             headers = self._add_token_to_headers(headers)
-        if self.session_name:
-            params = self._add_session_to_params(params)
-        response = self.requests_session.get(uri, headers=headers, params=params)
+        response = request_method(uri, headers=headers, **kwargs)
         if log_response:
-            self._log_response(response, type_="GET")
-        if as_json and response.status_code == 200:
-            return response.json()
+            self._log_response(response, type_=method)
+        if as_json:
+            try:
+                return response.json()
+            except JSONDecodeError as e:
+                raise ValueError("Could not convert response to JSON. "
+                                 "The requested resource most likely does not exist. "
+                                 "Response code: {}. Response content: '{}'".format(response.status_code,
+                                                                                   response.content.decode())) from e
         else:
             return response
 
-    def post(self, endpoint, headers=None, data=None, json=None, files=None, params=None):
-        uri = f"{self.url}/{endpoint.lstrip('/')}"
-        if self.api_token:
-            headers = self._add_token_to_headers(headers)
-        if self.session_name:
-            params = self._add_session_to_params(params)
-        response = self.requests_session.post(uri, data,
-                                              files=files,
-                                              json=json,
-                                              params=params,
-                                              headers=headers)
-        self._log_response(response, type_="POST")
-        return response
+    def get(self, endpoint, as_json=False, log_response=True, **kwargs):
+        """ Make GET request """
+        return self._request(endpoint, method="GET", as_json=as_json, log_response=log_response, **kwargs)
+
+    def post(self, endpoint, as_json=False, log_response=True, **kwargs):
+        """ Make POSt request """
+        return self._request(endpoint, method="POST", as_json=as_json, log_response=log_response, **kwargs)
+
+    def delete(self, endpoint, as_json=False, log_response=True, **kwargs):
+        """ Make DELETE request """
+        return self._request(endpoint, method="DELETE", as_json=as_json, log_response=log_response, **kwargs)
 
     def get_model_names(self):
-        return self.get("/api/v1/get/model_names", as_json=True)['models']
+        return self.get("/api/v1/info/model_names", as_json=True)['models']
 
     def set_model(self, model_str):
         logger.info(f"Setting model '{model_str}'")
@@ -87,28 +93,31 @@ class USleepAPI:
             err = "Invalid model, must be in {}".format(model_names)
             logger.error(err)
             raise ValueError(err)
-        self.post("/api/v1/sleep_stager/set_model", data={'model': model_str})
+        self.post(f"/api/v1/sleep_stager/{self.session_name}/set_model", data={'model': model_str})
 
     def upload_file(self, file_path):
         logger.info(f"Uploading file at path {file_path}. Please wait.")
         with open(file_path, "rb") as in_f:
-            return self.post("/api/v1/file/upload", files={'PSG': in_f})
+            return self.post(f"/api/v1/sleep_stager/{self.session_name}/file", files={'PSG': in_f})
 
     def delete_file(self):
-        return self.post('/api/v1/file/delete')
+        return self.delete(f"/api/v1/sleep_stager/{self.session_name}/file")
 
     def get_configuration_options(self):
         logger.info("Getting configuration")
-        return self.get("/api/v1/get/configuration_options", as_json=True)
+        return self.get(f"/api/v1/sleep_stager/{self.session_name}/configuration_options", as_json=True)
 
     def get_status(self):
-        return self.get("/api/v1/get/prediction_status", as_json=True)
+        return self.get(f"/api/v1/sleep_stager/{self.session_name}/prediction_status", as_json=True)
 
     def get_hypnogram(self):
-        response = self.get("/api/v1/get/hypnogram")
+        response = self.get(f"/api/v1/sleep_stager/{self.session_name}/hypnogram")
         if response.status_code == 200:
             response = response.json()
         return response
+
+    def get_prediction_log(self):
+        return self.get(f'/api/v1/sleep_stager/{self.session_name}/prediction_log', as_json=True)['log']
 
     def stream_prediction_log(self, verbose=True):
         full_log = []
@@ -116,15 +125,15 @@ class USleepAPI:
         def stream(delay_sec=0):
             """ Returns True if 'stream' should be called again, False otherwise """
             time.sleep(delay_sec)
-            response = self.get('/api/v1/get/prediction_log', log_response=False)
+            response = self.get(f"/api/v1/sleep_stager/{self.session_name}/prediction_log_stream", log_response=False)
             if response.status_code != 200:
                 raise ValueError(response.content)
             response = response.json()
-            lines = response['lines'].replace("<br>", "\n")
-            if lines:
+            log = response['log']
+            if log:
                 if verbose:
-                    print(lines)
-                full_log.append(lines)
+                    print(log)
+                full_log.append(log)
             return not response['finished']
         continue_stream = stream()
         while continue_stream:
@@ -137,10 +146,13 @@ class USleepAPI:
         return self.get_status()['label'].lower() == "completed"
 
     def get_session_names(self):
-        return self.get('/api/v1/sleep_stager/get_session_names', as_json=True)['session_names']
+        return self.get(f"/api/v1/sleep_stager/session_names", as_json=True)['session_names']
+
+    def get_session_details(self):
+        return self.get(f"/api/v1/sleep_stager/{self.session_name}", as_json=True)
 
     def delete_session(self):
-        return self.post('/api/v1/sleep_stager/delete_session')
+        return self.delete(f"/api/v1/sleep_stager/{self.session_name}")
 
     def delete_all_sessions(self):
         for session in self.get_session_names():
@@ -150,7 +162,8 @@ class USleepAPI:
         file_type = file_type.strip(".")
         assert file_type in ("tsv", "hyp", "npy"), "Invalid file format"
         # Download file
-        response = self.get(f'/api/v1/download/hypnogram_{file_type}', log_response=False)
+        response = self.get(endpoint=f"/api/v1/sleep_stager/{self.session_name}/download/hypnogram_{file_type}",
+                            log_response=False)
         if response.status_code == 200:
             # Save file to disk
             out_path = os.path.splitext(out_path)[0] + f".{file_type}"
@@ -158,7 +171,7 @@ class USleepAPI:
             with open(out_path, "wb") as out_f:
                 out_f.write(response.content)
         else:
-            raise ValueError(response.content)
+            raise ValueError(response.content.decode())
 
     def predict(self, channel_groups, data_per_prediction):
         data = {'data_per_prediction': int(data_per_prediction)}
@@ -168,4 +181,4 @@ class USleepAPI:
                 data[f'channels-{entry_count}'] = channel
                 data[f'channel_group_idx-{entry_count}'] = group_idx
                 entry_count += 1
-        return self.post("/api/v1/sleep_stager/predict", data=data)
+        return self.post(f"/api/v1/sleep_stager/{self.session_name}/predict", data=data)
