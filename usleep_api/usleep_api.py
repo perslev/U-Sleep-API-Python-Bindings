@@ -37,7 +37,7 @@ class USleepAPI:
 
     @staticmethod
     def _log_response(response, type_):
-        logger_method = logger.info if response.status_code == 200 else logger.error
+        logger_method = logger.info if response.status_code in (200, 201) else logger.error
         try:
             content = "[JSON data] " + str(response.json())[:50] + " ..."
         except json.JSONDecodeError:
