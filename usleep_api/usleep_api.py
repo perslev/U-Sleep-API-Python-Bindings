@@ -5,8 +5,11 @@ import os
 import time
 import requests
 import json
+from pprint import pformat
+from itertools import product
+from contextlib import contextmanager
 from json import JSONDecodeError
-from bs4 import BeautifulSoup
+from usleep_api.utils import random_hex_string, temp_anonymized_edf
 
 
 class USleepAPI:
@@ -23,6 +26,14 @@ class USleepAPI:
                          url=self.url,
                          session_name=session_name,
                          validate_token=False)
+
+    @contextmanager
+    def new_session_context(self, session_name):
+        session = self.new_session(session_name)
+        try:
+            yield session
+        finally:
+            session.delete_session()
 
     def validate_token(self):
         logger.info("Validating auth token...")
@@ -83,6 +94,9 @@ class USleepAPI:
         """ Make DELETE request """
         return self._request(endpoint, method="DELETE", as_json=as_json, log_response=log_response, **kwargs)
 
+    def get_config_variable(self, variable):
+        return self.get(f"/api/v1/info/config/{variable}", as_json=True)
+
     def get_model_names(self):
         return self.get("/api/v1/info/model_names", as_json=True)['models']
 
@@ -95,9 +109,12 @@ class USleepAPI:
             raise ValueError(err)
         self.post(f"/api/v1/sleep_stager/{self.session_name}/set_model", data={'model': model_str})
 
-    def upload_file(self, file_path):
+    def get_file_info(self):
+        return self.get(f"/api/v1/sleep_stager/{self.session_name}/file", as_json=True)
+
+    def upload_file(self, file_path, anonymize_before_upload=False):
         logger.info(f"Uploading file at path {file_path}. Please wait.")
-        with open(file_path, "rb") as in_f:
+        with temp_anonymized_edf(file_path) if anonymize_before_upload else open(file_path, "rb") as in_f:
             return self.post(f"/api/v1/sleep_stager/{self.session_name}/file", files={'PSG': in_f})
 
     def delete_file(self):
@@ -138,7 +155,8 @@ class USleepAPI:
         continue_stream = stream()
         while continue_stream:
             continue_stream = stream(delay_sec=2)
-        return "".join(full_log)
+        full_log = "".join(full_log)
+        return self.get_status()['label'].lower() == "completed", full_log
 
     def wait_for_completion(self):
         logger.info("Waiting for prediction completion...")
@@ -160,7 +178,7 @@ class USleepAPI:
 
     def download_hypnogram(self, out_path, file_type='tsv'):
         file_type = file_type.strip(".")
-        assert file_type in ("tsv", "hyp", "npy"), "Invalid file format"
+        assert file_type in ("tsv", "txt", "npy"), "Invalid file format"
         # Download file
         response = self.get(endpoint=f"/api/v1/sleep_stager/{self.session_name}/download/hypnogram_{file_type}",
                             log_response=False)
@@ -173,8 +191,43 @@ class USleepAPI:
         else:
             raise ValueError(response.content.decode())
 
-    def predict(self, channel_groups, data_per_prediction):
+    def _infer_channel_groups(self):
+        """
+        TODO
+
+        :return:
+        """
+        file_info = self.get_file_info()
+        channels = file_info['channels']
+        types = file_info['inferred_channel_types']
+        required_types = self.get_configuration_options()['required_channels']
+        matching_channels = [[
+            channel for channel, type in zip(channels, types) if type in required
+        ] for required in required_types]
+        all_groups = list(product(*matching_channels))
+        max_groups = self.get_config_variable("MAX_CHANNEL_COMBINATIONS")['MAX_CHANNEL_COMBINATIONS']
+        groups = all_groups[:max_groups]
+        logger.info(f"Auto-inferring channel groups...\n"
+                    f"-- Channels in file:        {channels}\n"
+                    f"-- Inferred types:          {types}\n"
+                    f"-- Required types:          {required_types}\n"
+                    f"-- Matching channels:       {matching_channels}\n"
+                    f"-- Inferred groups:         (N={len(all_groups)}) {all_groups}\n"
+                    f"-- Max allowed groups:      {max_groups}\n"
+                    f"-- Final groups:            (N={len(all_groups)} {groups}")
+        return groups
+
+    def predict(self, data_per_prediction, channel_groups=None):
+        """
+        TODO
+
+        :param channel_groups:
+        :param data_per_prediction:
+        :return:
+        """
         data = {'data_per_prediction': int(data_per_prediction)}
+        if channel_groups is None:
+            channel_groups = self._infer_channel_groups()
         entry_count = 0
         for group_idx, group in enumerate(channel_groups):
             for channel in group:
@@ -182,3 +235,49 @@ class USleepAPI:
                 data[f'channel_group_idx-{entry_count}'] = group_idx
                 entry_count += 1
         return self.post(f"/api/v1/sleep_stager/{self.session_name}/predict", data=data)
+
+    def quick_predict(self,
+                      input_file_path,
+                      model="U-Sleep v1.0",
+                      output_file_path=None,
+                      log_file_path=None,
+                      anonymize_before_upload=False,
+                      data_per_prediction=128*30,
+                      channel_groups=None,
+                      stream_log=False):
+        """
+        TODO
+
+        :param input_file_path:
+        :param model:
+        :param output_file_path:
+        :param log_file_path:
+        :param anonymize_before_upload:
+        :param data_per_prediction:
+        :param channel_groups:
+        :param stream_log:
+        :return:
+        """
+        session_name = random_hex_string()
+        logger.info(f"Creating throw-away session '{session_name}'")
+        with self.new_session_context(session_name) as session:
+            session.set_model(model)
+            session.upload_file(input_file_path, anonymize_before_upload=anonymize_before_upload)
+            logger.info(f"The server has the following info the uploaded file:\n{pformat(session.get_file_info())}")
+            session.predict(data_per_prediction=data_per_prediction,
+                            channel_groups=channel_groups)
+            success, log = session.stream_prediction_log(stream_log)
+            if success:
+                # Fetch hypnogram
+                hyp = session.get_hypnogram()
+                if output_file_path:
+                    # Download hypnogram file
+                    path, type_ = os.path.splitext(output_file_path)
+                    session.download_hypnogram(out_path=path, file_type=type_)
+            else:
+                logger.error("Prediction failed.")
+                hyp = None
+            if log_file_path:
+                with open(log_file_path, "w") as out_f:
+                    out_f.write(log)
+            return hyp, log
