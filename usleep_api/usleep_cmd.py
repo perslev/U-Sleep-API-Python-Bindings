@@ -1,5 +1,5 @@
 import logging
-logger = logging.getLogger("UsleepAPICMD")
+logger = logging.getLogger(__name__)
 
 import sys
 import os
