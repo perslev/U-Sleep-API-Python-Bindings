@@ -77,7 +77,7 @@ import os
 from usleep_api import USleepAPI
 
 # Create an API object with API token stored in environment variable 
-api = USleepAPI(api_token=os.environ['USLEEP-API-TOKEN'])
+api = USleepAPI(api_token=os.environ['USLEEP_API_TOKEN'])
 
 # Predict on anonymized PSG and save hypnogram to file
 hypnogram, log = api.quick_predict(
@@ -99,7 +99,7 @@ from usleep_api import USleepAPI
 
 # Create an API token at https://sleep.ai.ku.dk.
 # api_token = "eyJ0eXAiOiJKV1Q..."  # Alternatively, insert token here
-api_token = os.environ['USLEEP-API-TOKEN']
+api_token = os.environ['USLEEP_API_TOKEN']
 
 # Create an API object and (optionally) a new session.
 api = USleepAPI(api_token=api_token)

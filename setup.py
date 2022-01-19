@@ -17,6 +17,7 @@ setup(
     version=__version__,
     description='Python bindings to the U-Sleep web API.',
     long_description=readme,
+    long_description_content_type='text/markdown',
     author='Mathias Perslev',
     author_email='map@di.ku.dk',
     url='https://github.com/perslev/U-Sleep-API-Python-Bindings',
