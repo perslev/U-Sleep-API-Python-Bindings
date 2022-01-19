@@ -5,9 +5,9 @@ Python bindings to the U-Sleep Webserver API ([https://sleep.ai.ku.dk](https://s
 ## Purpose and Usage
 The U-Sleep Webserver provides a free and highly accurate sleep staging algorithm for Polysomnography data. It is publicly available for anyone interested in clinical sleep research. For details, see [https://www.nature.com/articles/s41746-021-00440-5](https://www.nature.com/articles/s41746-021-00440-5).
 
-This repository stores Python bindings to the U-Sleep Webserver API. The Python bindings may be used to easily upload PSG files for scoring to the U-Sleep webservice and fetch the results without the need for installing anything except Python and this package (see [Installation](##installation)).
+This repository stores Python bindings to the U-Sleep Webserver API. The Python bindings may be used to easily upload PSG files for scoring to the U-Sleep webservice and fetch the results without the need for installing anything except Python and this package (see [Installation](#installation)).
 
-The API bindings may be invoked from a Python script by importing the `USleepAPI` class (see [Python Example](###python-example) or [Detailed Python Example](###detailed-python-example) below) or by calling the `usleep-api` console script (see [Quick Start](##quick_start)) below.
+The API bindings may be invoked from a Python script by importing the `USleepAPI` class (see [Python Example](#python-example) or [Detailed Python Example](#detailed-python-example) below) or by calling the `usleep-api` console script (see [Quick Start](#quick_start)) below.
 
 ## Installation
 Via PIP:
@@ -47,7 +47,7 @@ It is recommended to store your API tokens using an environment variable named `
 >> export USLEEP_API_TOKEN=ABCDEF123456
 ```
 
-Calls may now be made to the U-Sleep API using the console script (see [Quick Start](###quick-start)), the `USleepAPI` Python class (see [Python Example](###python-example)) or directly, e.g. with:
+Calls may now be made to the U-Sleep API using the console script (see [Quick Start](#quick-start)), the `USleepAPI` Python class (see [Python Example](#python-example)) or directly, e.g. with:
 
 ```bash
 curl -s -X GET -H "Authorization: Bearer $USLEEP_API_TOKEN" https://sleep.ai.ku.dk/api/v1/info/model_names
