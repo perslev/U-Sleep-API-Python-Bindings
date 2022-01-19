@@ -13,7 +13,7 @@ The API bindings may be invoked from a Python script by importing the `USleepAPI
 Via PIP:
 
 ```bash
-pip install usleep_api
+pip install usleep-api
 ```
 
 Alternatively, you may pull and install the latest version from GitHub:
@@ -56,7 +56,7 @@ curl -s -X GET -H "Authorization: Bearer $USLEEP_API_TOKEN" https://sleep.ai.ku.
 
 ## Quick Start
 
-When installing the `usleep_api` package via PIP, the console script `usleep-api` is made available. Invoking this script will allow to score files without the need to create and run a Python script. For instance:
+When installing the `usleep-api` package via PIP, the console script `usleep-api` is made available. Invoking this script will allow to score files without the need to create and run a Python script. For instance:
 
 ```bash
 >> usleep-api ./my_psg.edf ./hypnogram.tsv --anonymize
