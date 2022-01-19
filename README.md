@@ -7,7 +7,7 @@ The U-Sleep Webserver provides a free and highly accurate sleep staging algorith
 
 This repository stores Python bindings to the U-Sleep Webserver API. The Python bindings may be used to easily upload PSG files for scoring to the U-Sleep webservice and fetch the results without the need for installing anything except Python and this package (see [Installation](#installation)).
 
-The API bindings may be invoked from a Python script by importing the `USleepAPI` class (see [Python Example](#python-example) or [Detailed Python Example](#detailed-python-example) below) or by calling the `usleep-api` console script (see [Quick Start](#quick_start)) below.
+The API bindings may be invoked from a Python script by importing the `USleepAPI` class (see [Python Example](#python-example) or [Detailed Python Example](#detailed-python-example) below) or by calling the `usleep-api` console script (see [Quick Start](#quick-start)) below.
 
 ## Installation
 Via PIP:
