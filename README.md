@@ -40,7 +40,7 @@ Requests to any API endpoint must include an API authentication token. To obtain
 
 At the time of writing the obtained token is valid for 12 hours. Once expired, a new token must be generated following the above procedure. Keep your token(s) private as they represent your identity to the server and allows others to authenticate on your behalf.
 
-### API Token Environment Variable
+#### API Token Environment Variable
 It is recommended to store your API tokens using an environment variable named `USLEEP_API_TOKEN`. For instance, with a token `ABCDEF123456`:
 
 ```bash
