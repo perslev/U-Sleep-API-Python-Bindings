@@ -1,11 +1,16 @@
 from setuptools import setup, find_packages
-from usleep_api import __version__
 
 with open('README.md') as readme_file:
     readme = readme_file.read()
 
 with open("requirements.txt") as req_file:
     requirements = list(filter(None, req_file.read().split("\n")))
+
+__version__ = None
+with open("usleep_api/version.py") as version_file:
+    exec(version_file.read())
+if __version__ is None:
+    raise ValueError("Did not find __version__ in version.py file.")
 
 setup(
     name='usleep_api',
@@ -18,6 +23,11 @@ setup(
     packages=find_packages(),
     package_dir={'usleep_api':
                  'usleep_api'},
+    entry_points={
+        'console_scripts': [
+            'usleep-api=usleep_api.usleep_cmd:entry_func',
+        ],
+    },
     include_package_data=True,
     install_requires=requirements,
     classifiers=['Environment :: Console',
