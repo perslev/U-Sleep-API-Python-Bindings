@@ -12,7 +12,7 @@ def random_hex_string(length=12):
 def temp_anonymized_edf(file_path):
     type_ = Path(file_path).suffix
     if type_ != ".edf":
-        raise ValueError("Attempting to anonymize non-edf file '{file_path} with suffix '{type_}'. "
+        raise ValueError(f"Attempting to anonymize non-edf file '{file_path} with suffix '{type_}'. "
                          "This feature is currently only available for EDF(+) (.edf) file types.")
     logger.info(f"Anonymizing file at {file_path}.")
     anon_file = NamedTemporaryFile(mode="w+b", suffix=file_path.suffix)
