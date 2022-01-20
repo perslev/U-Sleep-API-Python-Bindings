@@ -7,7 +7,7 @@ The U-Sleep Webserver provides a free and highly accurate sleep staging algorith
 
 This repository stores Python bindings to the U-Sleep Webserver API. The Python bindings may be used to easily upload PSG files for scoring to the U-Sleep webservice and fetch the results without the need for installing anything except Python and this package (see [Installation](#installation)).
 
-The API bindings may be invoked from a Python script by importing the `USleepAPI` class (see [Python Example](#python-example) or [Detailed Python Example](#detailed-python-example) below) or by calling the `usleep-api` console script (see [Quick Start](#quick-start)) below.
+The API bindings may be called from a Python script by importing the `USleepAPI` class (see [Python Example](#python-example) or [Detailed Python Example](#detailed-python-example) below) or by calling the `usleep-api` console script (see [Quick Start](#quick-start)) below.
 
 ## Installation
 Via PIP:
@@ -38,7 +38,7 @@ Requests to any API endpoint must include an API authentication token. To obtain
 2. Select "Account" and "Generate API Token" from the drop-down menu.
 3. Paste the API token into your script or create an environment variable to store the token (see details below).
 
-At the time of writing the obtained token is valid for 12 hours. Once expired, a new token must be generated following the above procedure. Keep your token(s) private as they represent your identity to the server and allows others to authenticate on your behalf.
+At the time of writing the obtained token is valid for 12 hours. Once expired, a new token must be generated following the above procedure. Keep your token(s) private as they represent your identity to the server and allow others to authenticate on your behalf.
 
 #### API Token Environment Variable
 It is recommended to store your API tokens using an environment variable named `USLEEP_API_TOKEN`. For instance, with a token `ABCDEF123456`:
@@ -56,13 +56,13 @@ curl -s -X GET -H "Authorization: Bearer $USLEEP_API_TOKEN" https://sleep.ai.ku.
 
 ## Quick Start
 
-When installing the `usleep-api` package via PIP, the console script `usleep-api` is made available. Invoking this script will allow to score files without the need to create and run a Python script. For instance:
+When installing the `usleep-api` package via PIP, the console script `usleep-api` is made available. Calling this script will allow to score files without the need to create and run a Python script. For instance:
 
 ```bash
 >> usleep-api ./my_psg.edf ./hypnogram.tsv --anonymize
 ```
 
-This will upload an anonymized version of the file `./my_psg.edf` to the U-Sleep webservice, then download the scored hypnogram and save it to `./hypnogram.tsv`. Per default, the script scores the PSG at 1/30 Hz using the `U-Sleep v1.0` model and all (automatically inferred) combinations of valid input channels. However, the script accepts several parameters to configure its use. Invoke `usleep-api --help` to see a list of available options.
+This will upload an anonymized version of the file `./my_psg.edf` to the U-Sleep webservice, then download the scored hypnogram and save it to `./hypnogram.tsv`. Per default, the script scores the PSG at 1/30 Hz using the `U-Sleep v1.0` model and all (automatically inferred) combinations of valid input channels. However, the script accepts several parameters to configure its use. Call `usleep-api --help` to see a list of available options.
 
 ## Python Bindings
 
@@ -88,7 +88,7 @@ hypnogram, log = api.quick_predict(
 ```
 
 ### Detailed Python Example
-For more fine-grained control, you may invoke the relevant lower-level API bindings e.g. as follows:
+For more fine-grained control, you may call the relevant lower-level API bindings e.g. as follows:
 
 ```python
 import logging
