@@ -3,6 +3,7 @@ logger = logging.getLogger(__name__)
 
 import sys
 import os
+from getpass import getpass
 from pathlib import Path
 from argparse import ArgumentParser
 from usleep_api import USleepAPI
@@ -78,6 +79,16 @@ def init_logging(level):
     return logger
 
 
+def get_token(args):
+    try:
+        token = args['token'] or os.environ[args['api_token_env_name']]
+    except KeyError:
+        logger.warning(f"No token passed with --token flag and no environment variable "
+                       f"of name '{args['api_token_env_name']}' found.")
+        token = getpass("\nMissing API token. Create an API token at https://sleep.ai.ku.dk and paste it here: ")
+    return token
+
+
 def entry_func():
     args = vars(get_argparser().parse_args(sys.argv[1:]))
     logger = init_logging(args['log_level'])
@@ -102,7 +113,7 @@ def entry_func():
     logger.info(f"Output file:         {out_path}")
     logger.info(f"Prediction log file: {log_file_path}")
 
-    api = USleepAPI(api_token=args['token'] or os.environ[args['api_token_env_name']])
+    api = USleepAPI(api_token=get_token(args))
     hypnogram, log = api.quick_predict(
         input_file_path=in_path,
         output_file_path=out_path,
