@@ -9,6 +9,8 @@ This repository stores Python bindings to the U-Sleep Webserver API. The Python 
 
 The API bindings may be called from a Python script by importing the `USleepAPI` class (see [Python Example](#python-example) or [Detailed Python Example](#detailed-python-example) below) or by calling the `usleep-api` console script (see [Quick Start](#quick-start)) below.
 
+![Console Script Illustration](resources/cmd_api_overview.png)
+
 ## Installation
 Via PIP:
 

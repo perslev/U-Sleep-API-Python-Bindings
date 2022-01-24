@@ -29,7 +29,7 @@ setup(
             'usleep-api=usleep_api.usleep_cmd:entry_func',
         ],
     },
-    include_package_data=True,
+    include_package_data=False,
     install_requires=requirements,
     classifiers=['Environment :: Console',
                  'Programming Language :: Python :: 3.6',
