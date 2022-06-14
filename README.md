@@ -66,6 +66,13 @@ When installing the `usleep-api` package via PIP, the console script `usleep-api
 
 This will upload an anonymized version of the file `./my_psg.edf` to the U-Sleep webservice, then download the scored hypnogram and save it to `./hypnogram.tsv`. Per default, the script scores the PSG at 1/30 Hz using the `U-Sleep v1.0` model and all (automatically inferred) combinations of valid input channels. However, the script accepts several parameters to configure its use. Call `usleep-api --help` to see a list of available options.
 
+#### Confidence Scores
+To download a raw hypnogram numpy array with confidence scores:
+
+```bash
+>> usleep-api ./my_psg.edf ./hypnogram.npy --anonymize --with-confidence-scores
+```
+
 ## Python Bindings
 
 The `USleepAPI` class provides bindings for most of the API endpoints.
