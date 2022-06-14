@@ -176,11 +176,15 @@ class USleepAPI:
         for session in self.get_session_names():
             self.new_session(session).delete_session()
 
-    def download_hypnogram(self, out_path, file_type='tsv'):
+    def download_hypnogram(self, out_path, file_type='tsv', with_confidence_scores=False):
         file_type = file_type.strip(".")
         assert file_type in ("tsv", "txt", "npy"), "Invalid file format"
+        if with_confidence_scores and file_type != 'npy':
+            raise ValueError(f"Cannot download hypnogram with confidence scores as file type "
+                             f"'{file_type}'. Must be 'npy'.")
         # Download file
-        response = self.get(endpoint=f"/api/v1/sleep_stager/{self.session_name}/download/hypnogram_{file_type}",
+        leading_name = 'hypnogram_' if not with_confidence_scores else 'hypnogram_raw_'
+        response = self.get(endpoint=f"/api/v1/sleep_stager/{self.session_name}/download/{leading_name}{file_type}",
                             log_response=False)
         if response.status_code == 200:
             # Save file to disk
@@ -244,6 +248,7 @@ class USleepAPI:
                       anonymize_before_upload=False,
                       data_per_prediction=128*30,
                       channel_groups=None,
+                      with_confidence_scores=False,
                       stream_log=False):
         """
         TODO
@@ -255,6 +260,7 @@ class USleepAPI:
         :param anonymize_before_upload:
         :param data_per_prediction:
         :param channel_groups:
+        with_confidence_scores:
         :param stream_log:
         :return:
         """
@@ -273,7 +279,9 @@ class USleepAPI:
                 if output_file_path:
                     # Download hypnogram file
                     path, type_ = os.path.splitext(output_file_path)
-                    session.download_hypnogram(out_path=path, file_type=type_)
+                    session.download_hypnogram(out_path=path,
+                                               file_type=type_,
+                                               with_confidence_scores=with_confidence_scores)
             else:
                 logger.error("Prediction failed.")
                 hyp = None

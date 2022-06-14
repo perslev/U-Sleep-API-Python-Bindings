@@ -26,7 +26,8 @@ def get_argparser():
               ">> usleep-api ./my_psg.edf ./hypnogram.tsv --log-level=ERROR\n"
               ">> usleep-api ./my_psg.edf ./hypnogram.tsv --anonymize-before-upload\n"
               ">> usleep-api ./my_psg.edf ./hypnogram.tsv --channel-groups C3-A2++EOG C4-A1++EOG F3-A2++EOG\n"
-              ">> usleep-api ./my_psg.edf ./hypnogram.txt --data-per-prediction 128"
+              ">> usleep-api ./my_psg.edf ./hypnogram.txt --data-per-prediction 128\n"
+              ">> usleep-api ./my_psg.edf ./hypnogram.npy --with-confidence-scores"
     )
     parser.add_argument("input file path", type=str, help="Path to input EDF(+) (.edf) file to score.")
     parser.add_argument("output file path", type=str, help="Path to output file, e.g., 'hypnogram.tsv'. "
@@ -40,6 +41,10 @@ def get_argparser():
     parser.add_argument("--data-per-prediction", type=int, default=128*30,
                         help="Number of data points (in re-sampled signal, 128 Hz for U-Sleep v1.0) to use for each "
                              "prediction. Default is 128*30 = 3840, i.e., 1 prediction/sleep stage pr. 30 seconds.")
+    parser.add_argument("--with-confidence-scores", action="store_true",
+                        help="Download a raw hypnogram with confidence scores. The output file extension must be .npy. "
+                             "With this flag the .npy file will store a [n_periods, n_classes] shaped float array. "
+                             "Without the flag an argmaxed [n_periods] array of integers.")
     parser.add_argument("--anonymize-before-upload", action="store_true",
                         help="Anonymize the input file before uploading to the server. "
                              "This creates a temporary file and does not modify the original file. "
@@ -100,6 +105,9 @@ def entry_func():
     out_path = Path(args['output file path']).absolute()
     if out_path.suffix not in (".tsv", ".txt", ".npy"):
         raise ValueError(f"Out file path must have extension in ('.tsv', '.txt', '.npy'), got '{out_path.suffix}'")
+    if out_path.suffix != '.npy' and args['with_confidence_scores']:
+        raise ValueError(f"Cannot download hypnogram with confidence scores as file type "
+                         f"'{out_path.suffix}'. Must be 'npy'.")
     overwrite = args['overwrite_file']
     if out_path.exists() and not overwrite:
         raise OSError(f"Output hypnogram file at '{out_path}' already exists and the --overwrite-file flag was not set.")
@@ -121,6 +129,7 @@ def entry_func():
         anonymize_before_upload=args['anonymize_before_upload'],
         data_per_prediction=args['data_per_prediction'],
         channel_groups=[c.split("++") for c in args['channel_groups']] if args['channel_groups'] else None,
+        with_confidence_scores=args['with_confidence_scores'],
         stream_log=args['stream_log'],
         log_file_path=log_file_path
     )
